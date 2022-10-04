@@ -14,7 +14,7 @@ For the visualization tool, see this [repo](https://github.com/SestoAle/VisCCPT)
 </p>
 
 # Prerequisites
-* The code was tested with **Python v3.6**.
+* The code was tested with **Python v3.7**.
 * To install all required packages:
 ```
 git clone https://github.com/SestoAle/CCPT.git
