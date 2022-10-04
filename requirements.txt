@@ -9,6 +9,6 @@
 
 matplotlib
 seaborn
-tensorflow-gpu==2.0.0
+tensorflow==2.0.0
 tensorflow_probability==0.8
 gdown

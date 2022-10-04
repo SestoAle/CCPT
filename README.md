@@ -22,7 +22,7 @@ cd CCPT
 pip install -r requirements.txt
 pip install mlagents==0.5.0 --no-deps
 ```
-* To donwload the environment and the demonstrations:
+* To download the environment and the demonstrations:
 ```
 python download_data.py
 sudo chmod +x games/Playtesting_Final.x86_64
