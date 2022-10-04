@@ -4,6 +4,7 @@ Alessandro Sestini, Linus Gisslén, Joakim Bergdahl, Konrad Tollmar, and Andrew 
 
 A link to our paper can be found in [arxiv](https://arxiv.org/pdf/2202.10057)
 
+<br/>
 <p align="center">
     <img src="imgs/teasing.png" width="600">
 </p>
@@ -12,6 +13,7 @@ A link to our paper can be found in [arxiv](https://arxiv.org/pdf/2202.10057)
 * The code was tested with **Python v3.6**.
 * To install all required packages:
 ```
+git clone https://github.com/SestoAle/CCPT.git
 cd CCPT
 pip install -r requirements.txt
 ```
