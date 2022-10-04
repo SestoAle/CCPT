@@ -5,7 +5,7 @@ Alessandro Sestini, Linus Gisslén, Joakim Bergdahl, Konrad Tollmar, and Andrew 
 A link to our paper can be found in [arxiv](https://arxiv.org/pdf/2202.10057)
 
 <p align="center">
-    <img src="imgs/teasing.png" width="800">
+    <img src="imgs/teasing.png" width="600">
 </p>
 
 # Prerequisites
