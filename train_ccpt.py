@@ -139,7 +139,7 @@ if __name__ == "__main__":
         agent = PPO(sess, input_spec=input_spec, network_spec=network_spec, obs_to_state=obs_to_state, batch_fraction=0.2,
                     action_type='discrete', action_size=10, model_name=model_name, p_lr=7e-5, v_batch_fraction=0.2,
                     v_num_itr=10, memory=memory, c2=0.1,
-                    v_lr=7e-5, recurrent=args.recurrent, frequency_mode=frequency_mode, distribution='gaussian',
+                    v_lr=7e-5, frequency_mode=frequency_mode, distribution='gaussian',
                     p_num_itr=10, with_circular=True)
         # Initialize variables of models
         init = tf.compat.v1.global_variables_initializer()

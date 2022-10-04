@@ -1,4 +1,3 @@
-from google_drive_downloader import GoogleDriveDownloader as gdd
 from sys import platform
 import gdown
 import zipfile
