@@ -4,7 +4,7 @@ Alessandro Sestini, Linus Gisslén, Joakim Bergdahl, Konrad Tollmar, and Andrew 
 
 This repo contains the Curiosity-Conditioned Proximal Trajectories (CCPT) algorithm (Algorithm 1 in the paper).
 
-A link to our paper can be found in [arxiv](https://arxiv.org/pdf/2202.10057)
+A link to our paper can be found in [arxiv](https://arxiv.org/pdf/2202.10057).
 
 For the visualization tool, see this [repo](https://github.com/SestoAle/VisCCPT).
 
