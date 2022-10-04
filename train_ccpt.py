@@ -9,7 +9,7 @@ import argparse
 from envs.unity_env import PlayTestEnvironment
 from reward_model.reward_model import GAIL
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 physical_devices = tf.config.experimental.list_physical_devices('GPU')
 if len(physical_devices) > 0:
     tf.config.experimental.set_memory_growth(physical_devices[0], True)
@@ -18,25 +18,25 @@ if len(physical_devices) > 0:
 parser = argparse.ArgumentParser()
 parser.add_argument('-mn', '--model-name', help="The name of the model", default='playtest')
 parser.add_argument('-gn', '--game-name', help="The name of the game", default="games/playtest_env")
-parser.add_argument('-wk', '--work-id', help="Work id for parallel training", default=0)
+parser.add_argument('-ga', '--goal-area', help='The goal area we want to test', default=1, choices=[1, 2, 3, 4], type=int)
+parser.add_argument('-wk', '--work-id', help="Work id for parallel training", default=1)
 parser.add_argument('-sf', '--save-frequency', help="How mane episodes after save the model", default=3000)
 parser.add_argument('-lg', '--logging', help="How many episodes after logging statistics", default=100)
-parser.add_argument('-mt', '--max-timesteps', help="Max timestep per episode", default=200)
+parser.add_argument('-mt', '--max-timesteps', help="Max timestep per episode", default=500)
 parser.add_argument('-pl', '--parallel', dest='parallel', action='store_true')
 
 # Parse arguments for GAIL
 parser.add_argument('-irl', '--inverse-reinforcement-learning', dest='use_reward_model', action='store_true')
-parser.add_argument('-rf', '--reward-frequency', help="How many episode before update the reward model", default=1)
+parser.add_argument('-rf', '--reward-frequency', help="How many episode before update the reward model", default=30)
 parser.add_argument('-rm', '--reward-model', help="The name of the reward model", default='vaffanculo_6000')
 parser.add_argument('-dn', '--dems-name', help="The name of the demonstrations file", default='dem_playtest_3.pkl')
 
 # Parse arguments for Intrinsic Motivation
 parser.add_argument('-m', '--motivation', dest='use_motivation', action='store_true')
 
-parser.set_defaults(use_reward_model=False)
-parser.set_defaults(recurrent=False)
-parser.set_defaults(parallel=False)
-parser.set_defaults(use_motivation=False)
+parser.set_defaults(use_reward_model=True)
+parser.set_defaults(parallel=True)
+parser.set_defaults(use_motivation=True)
 
 args = parser.parse_args()
 
@@ -116,11 +116,9 @@ if __name__ == "__main__":
             "agent_spawn_z": [0, 0, 0],
             "agent_spawn_y": [1.7, 1.7, 1.7],
             "win_weight": [[0.5], [0.5], [0.5]],
-            #"reward_weights": [[0, 0, 0.3, 0.5, 0.8, 1, 1], [0, 0, 0.3, 0.5, 0.8, 1, 1],
-            #                   [0, 0, 0.3, 0.5, 0.8, 1, 1]],
-            "reward_weights": [[0], [0],
-                               [0]],
-            "goal_area": [1, 1, 1]
+            "reward_weights": [[0, 0, 0.3, 0.5, 0.8, 1, 1], [0, 0, 0.3, 0.5, 0.8, 1, 1],
+                               [0, 0, 0.3, 0.5, 0.8, 1, 1]],
+            "goal_area": [args.goal_area, args.goal_area, args.goal_area]
         }
     }
 
