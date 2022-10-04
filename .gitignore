@@ -1,0 +1,7 @@
+saved/*
+arrays/*
+games/*
+.idea/
+**/__pycache__/
+UnitySDK.log
+reward_model/dems/*
