@@ -43,7 +43,7 @@ class ActThreaded(Thread):
                                                                                                v_internal)
             entropies.append(self.env.entropy(probs[0]))
             actions = actions[0]
-            state_n, done, reward = self.env.execute(actions)
+            state_n, done, reward, info = self.env.execute(actions)
             step += 1
             total_reward += reward
 
@@ -129,7 +129,7 @@ class EpisodeThreaded(Thread):
                     actions, logprobs, probs, internal_n, v_internal_n = self.agent.eval_recurrent([state], internal,
                                                                                                  v_internal)
                 actions = actions[0]
-                state_n, done, reward = self.env.execute(actions)
+                state_n, done, reward, info = self.env.execute(actions)
 
                 #reward = reward[0]
                 #done = done[0]
@@ -168,6 +168,8 @@ class EpisodeThreaded(Thread):
             self.parallel_buffer['episode_timesteps'][self.index].append(step)
             self.parallel_buffer['mean_entropies'][self.index].append(np.mean(local_entropies))
             self.parallel_buffer['std_entropies'][self.index].append(np.std(local_entropies))
+            self.parallel_buffer['info'][self.index].append(info)
+
 
 
 class Runner:
@@ -239,7 +241,8 @@ class Runner:
             "mean_entropies": [],
             "std_entropies": [],
             "reward_model_loss": [],
-            "env_rewards": []
+            "env_rewards": [],
+            "info": []
         }
 
         # Initialize parallel buffer for savig experience of each thread without race conditions
@@ -274,9 +277,10 @@ class Runner:
                 # Getting initial experience from the environment to do the first training epoch of the reward model
                 self.get_experience(self.envs[0], self.reward_frequency, random=True)
                 self.update_reward_model()
-        elif self.motivation is not None:
-            # If there is only intrinsic motivation, do some episode for the normalization buffer
-            self.get_experience(self.envs[0], self.motivation_frequency, random=True)
+        # elif self.motivation is not None:
+        #     # If there is only intrinsic motivation, do some episode for the normalization buffer
+        #     self.envs[0].set_config(config)
+        #     self.get_experience(self.envs[0], self.motivation_frequency, random=True)
 
         # For curriculum training
         self.start_training = 0
@@ -348,6 +352,7 @@ class Runner:
             'episode_timesteps': [],
             'mean_entropies': [],
             'std_entropies': [],
+            'info': [],
         }
 
         for i in range(len(self.envs)):
@@ -373,6 +378,9 @@ class Runner:
             parallel_buffer['episode_timesteps'].append([])
             parallel_buffer['mean_entropies'].append([])
             parallel_buffer['std_entropies'].append([])
+
+            parallel_buffer['info'].append([])
+
 
         return parallel_buffer
 
@@ -491,17 +499,19 @@ class Runner:
                                                        self.parallel_buffer['reward_model'][i]['action'])
 
                 # Upadte the hisotry in order of execution
-                for episode_reward, step, mean_entropies, std_entropies in zip(
+                for episode_reward, step, mean_entropies, std_entropies, info in zip(
                         self.parallel_buffer['episode_rewards'][i],
                         self.parallel_buffer['episode_timesteps'][i],
                         self.parallel_buffer['mean_entropies'][i],
                         self.parallel_buffer['std_entropies'][i],
-
+                        self.parallel_buffer['info'][i],
                 ):
                     self.history['episode_rewards'].append(episode_reward)
                     self.history['episode_timesteps'].append(step)
                     self.history['mean_entropies'].append(mean_entropies)
                     self.history['std_entropies'].append(std_entropies)
+                    self.history['info'].append(info)
+
 
             # Clear parallel buffer
             self.parallel_buffer = self.clear_parallel_buffer()
@@ -700,7 +710,7 @@ class Runner:
                     action = np.random.randint(0, num_actions)
                 else:
                     action, _, c_probs = self.agent.eval([state])
-                state_n, terminal, step_reward = env.execute(actions=action)
+                state_n, terminal, step_reward, info = env.execute(actions=action)
                 if self.reward_model is not None:
                     self.reward_model.add_to_policy_buffer([state], [state_n], [action])
 
@@ -776,6 +786,7 @@ class Runner:
 
             intrinsic_rews *= weights[:, 1]
             self.agent.buffer['rewards'] = list(intrinsic_rews + np.asarray(self.agent.buffer['rewards']))
+            print(self.agent.buffer['rewards'])
 
         if self.reward_model is not None:
 

@@ -1,0 +1,48 @@
+---
+# Basic yaml configuration
+
+# Unity engine options
+unity_engine_settings:
+    width: 1024
+    height: 1024
+    quality_level: 1
+    time_scale: 1 # Allows for faster training time, but may introduce unwanted physics behaviour
+    target_frame_rate: -1
+    capture_frame_rate: 60
+
+# City generation options
+env_settings:
+    seed: 1337
+    block_count_x: 5
+    block_count_z: 5
+    park_ratio: 0.25
+
+action_space_settings:
+    continuous_actions: true
+    available_actions:
+        - move_vertical
+        - move_horizontal
+
+# Observation space
+observation_space_settings:
+    # Vector observations
+    vector_obs_settings:
+        position_type: "absolute"
+        include_bug_position: false
+
+    # Semantic map sensor
+    semantic_map_settings:
+        semantic_map_x: 5
+        semantic_map_y: 5
+        semantic_map_z: 5
+
+
+bug_settings:
+    gadget: 1
+    state: 1
+    geometry: 1
+    physics: 1
+    logic: 1
+...
+
+

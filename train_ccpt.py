@@ -1,12 +1,12 @@
 from agents.PPO import PPO
-from architectures.playtesting_arch import *
+from architectures.osb3d_arch import *
 from runner.runner import Runner
 from runner.parallel_runner import Runner as ParallelRunner
 from motivation.random_network_distillation import RND
 import os
 import tensorflow as tf
 import argparse
-from envs.unity_env import PlayTestEnvironment
+from envs.osb3d_env import OSB3DEnvWrapper
 from reward_model.reward_model import GAIL
 
 os.environ["CUDA_VISIBLE_DEVICES"] = "0"
@@ -17,8 +17,8 @@ if len(physical_devices) > 0:
 # Parse arguments for training
 parser = argparse.ArgumentParser()
 parser.add_argument('-mn', '--model-name', help="The name of the model", default='playtest')
-parser.add_argument('-gn', '--game-name', help="The name of the game", default="games/playtest_env")
-parser.add_argument('-ga', '--goal-area', help='The goal area we want to test', default=1, choices=[1, 2, 3, 4], type=int)
+parser.add_argument("-cf", "--configuration-file", help=None, default="config/basic.yaml")
+parser.add_argument('-gn', '--game-name', help="The name of the game", default="games/OSB3D")
 parser.add_argument('-wk', '--work-id', help="Work id for parallel training", default=1)
 parser.add_argument('-sf', '--save-frequency', help="How mane episodes after save the model", default=3000)
 parser.add_argument('-lg', '--logging', help="How many episodes after logging statistics", default=100)
@@ -34,8 +34,8 @@ parser.add_argument('-dn', '--dems-name', help="The name of the demonstrations f
 # Parse arguments for Intrinsic Motivation
 parser.add_argument('-m', '--motivation', dest='use_motivation', action='store_true')
 
-parser.set_defaults(use_reward_model=True)
-parser.set_defaults(parallel=True)
+parser.set_defaults(use_reward_model=False)
+parser.set_defaults(parallel=False)
 parser.set_defaults(use_motivation=True)
 
 args = parser.parse_args()
@@ -43,44 +43,44 @@ args = parser.parse_args()
 eps = 1e-12
 
 def callback(agent, env, runner):
+    return
+    # global last_key
+    # save_frequency = 100
 
-    global last_key
-    save_frequency = 100
+    # if runner.ep % save_frequency == 0:
+    #     if isinstance(env, list):
 
-    if runner.ep % save_frequency == 0:
-        if isinstance(env, list):
+    #         trajectories_for_episode = dict()
+    #         actions_for_episode = dict()
 
-            trajectories_for_episode = dict()
-            actions_for_episode = dict()
+    #         for e in env:
+    #             for traj, acts in zip(e.trajectories_for_episode.values(), e.actions_for_episode.values()):
+    #                 trajectories_for_episode[last_key] = traj
+    #                 actions_for_episode[last_key] = acts
+    #                 last_key += 1
+    #             e.clear_buffers()
+    #         positions = 0
+    #     else:
+    #         positions = len(env.pos_buffer.keys())
+    #         trajectories_for_episode = env.trajectories_for_episode
+    #         actions_for_episode = env.actions_for_episode
 
-            for e in env:
-                for traj, acts in zip(e.trajectories_for_episode.values(), e.actions_for_episode.values()):
-                    trajectories_for_episode[last_key] = traj
-                    actions_for_episode[last_key] = acts
-                    last_key += 1
-                e.clear_buffers()
-            positions = 0
-        else:
-            positions = len(env.pos_buffer.keys())
-            trajectories_for_episode = env.trajectories_for_episode
-            actions_for_episode = env.actions_for_episode
+    #     print('Coverage of points: {}'.format(positions))
 
-        print('Coverage of points: {}'.format(positions))
+    #     # Save the trajectories
+    #     json_str = json.dumps(trajectories_for_episode, cls=NumpyEncoder)
+    #     f = open("arrays/{}/{}_trajectories_{}.json".format(model_name, model_name, runner.ep), "w")
+    #     f.write(json_str)
+    #     f.close()
 
-        # Save the trajectories
-        json_str = json.dumps(trajectories_for_episode, cls=NumpyEncoder)
-        f = open("arrays/{}/{}_trajectories_{}.json".format(model_name, model_name, runner.ep), "w")
-        f.write(json_str)
-        f.close()
+    #     # Save the actions
+    #     json_str = json.dumps(actions_for_episode, cls=NumpyEncoder)
+    #     f = open("arrays/{}/{}_actions_{}.json".format(model_name, model_name, runner.ep), "w")
+    #     f.write(json_str)
+    #     f.close()
 
-        # Save the actions
-        json_str = json.dumps(actions_for_episode, cls=NumpyEncoder)
-        f = open("arrays/{}/{}_actions_{}.json".format(model_name, model_name, runner.ep), "w")
-        f.write(json_str)
-        f.close()
-
-        del trajectories_for_episode
-        del actions_for_episode
+    #     del trajectories_for_episode
+    #     del actions_for_episode
 
 
 if __name__ == "__main__":
@@ -110,15 +110,10 @@ if __name__ == "__main__":
     # Curriculum structure; here you can specify also the agent statistics (ATK, DES, DEF and HP)
     curriculum = {
         'current_step': 0,
-        "thresholds": [3000, 3000],
+        "thresholds": [10000000000],
         "parameters": {
-            "agent_spawn_x": [0, 0, 0],
-            "agent_spawn_z": [0, 0, 0],
-            "agent_spawn_y": [1.7, 1.7, 1.7],
-            "win_weight": [[0.5], [0.5], [0.5]],
-            "reward_weights": [[0, 0, 0.3, 0.5, 0.8, 1, 1], [0, 0, 0.3, 0.5, 0.8, 1, 1],
-                               [0, 0, 0.3, 0.5, 0.8, 1, 1]],
-            "goal_area": [args.goal_area, args.goal_area, args.goal_area]
+            "win_weight": [[0.5], [0.5]],
+            "reward_weights": [[0]],
         }
     }
 
@@ -137,7 +132,7 @@ if __name__ == "__main__":
         tf.compat.v1.disable_eager_execution()
         sess = tf.compat.v1.Session(graph=graph)
         agent = PPO(sess, input_spec=input_spec, network_spec=network_spec, obs_to_state=obs_to_state, batch_fraction=0.2,
-                    action_type='discrete', action_size=10, model_name=model_name, p_lr=7e-5, v_batch_fraction=0.2,
+                    action_type='continuous', action_size=6, model_name=model_name, p_lr=7e-5, v_batch_fraction=0.2,
                     v_num_itr=10, memory=memory, c2=0.1,
                     v_lr=7e-5, frequency_mode=frequency_mode, distribution='gaussian',
                     p_num_itr=10, with_circular=True)
@@ -173,14 +168,14 @@ if __name__ == "__main__":
     # Open the environment with all the desired flags
     if not parallel:
         # Open the environment with all the desired flags
-        env = PlayTestEnvironment(game_name=game_name, no_graphics=True, worker_id=work_id,
-                             max_episode_timesteps=max_episode_timestep)
+        env = OSB3DEnvWrapper(game_name=game_name, no_graphics=True, worker_id=work_id,
+                             max_episode_timesteps=max_episode_timestep, configuration_file=args.configuration_file)
     else:
         # If parallel, create more environments
         envs = []
         for i in range(10):
-            envs.append(PlayTestEnvironment(game_name=game_name, no_graphics=True, worker_id=work_id + i,
-                                       max_episode_timesteps=max_episode_timestep))
+            envs.append(OSB3DEnvWrapper(game_name=game_name, no_graphics=True, worker_id=work_id + i,
+                                       max_episode_timesteps=max_episode_timestep, configuration_file=args.configuration_file))
 
     # Create runner
     if not parallel:

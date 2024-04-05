@@ -73,7 +73,8 @@ class Runner:
             "mean_entropies": [],
             "std_entropies": [],
             "reward_model_loss": [],
-            "env_rewards": []
+            "env_rewards": [],
+            "info": []
         }
 
         # Initialize reward model
@@ -190,7 +191,7 @@ class Runner:
                 local_entropies.append(self.env.entropy(probs[0]))
 
                 # Execute in the environment
-                state_n, done, reward = self.env.execute(action, visualize)
+                state_n, done, reward, info = self.env.execute(action, visualize)
 
                 # Intrinsic Motivation
                 # Add the next state to the motivation buffer
@@ -198,7 +199,7 @@ class Runner:
                 if self.motivation is not None:
 
                     motivation_reward = self.motivation.eval([state_n])
-                    print(motivation_reward)
+                    # print(motivation_reward)
                     self.motivation.add_to_buffer(state_n)
 
                 # Inverse Reinforcement Learning
@@ -208,7 +209,7 @@ class Runner:
 
                     irl_reward = self.reward_model.eval([state], [state_n],
                                                             [action])
-                    print(irl_reward)
+                    # print(irl_reward)
                     self.reward_model.add_to_policy_buffer([state], [state_n], [action])
 
                 # If step is equal than max timesteps, terminate the episode
@@ -295,11 +296,16 @@ class Runner:
 
                 # If done, end the episode and save statistics
                 if done == 1:
+                    # Add time only if the episode is done
+                    info["time"] = time.time() - start_time
+
                     self.history['episode_rewards'].append(episode_reward)
                     self.history['episode_timesteps'].append(step)
                     self.history['mean_entropies'].append(np.mean(local_entropies))
                     self.history['std_entropies'].append(np.std(local_entropies))
                     self.history['env_rewards'].append(env_episode_reward)
+                    self.history['info'].append(info)
+
                     break
 
             # Logging information

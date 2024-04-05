@@ -718,7 +718,7 @@ class PPO:
         tf.compat.v1.disable_eager_execution()
         self.saver.save(self.sess, '{}/{}'.format(folder, name))
 
-        if True:
+        if False:
             graph_def = self.sess.graph.as_graph_def()
 
             # freeze_graph clear_devices option
