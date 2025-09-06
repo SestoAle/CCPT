@@ -27,6 +27,16 @@ pip install mlagents==0.5.0 --no-deps
 python download_data.py
 sudo chmod +x games/Playtesting_Final.x86_64
 ```
+
+By default, the script will download an environment with timescale x100. Unfortunately, old versions of Unity MLAgents have the timescale value hard-coded into the game, so it is not possible to change it after you download the binaries. However, we provide another environment with timescale 1, in case you want to test the your agent. To download the envrionment with timescale 1, you can do:
+
+*NB: The script will overwrite the environment you already have (the environments with timescale 100 and 1 have the same name)*
+
+```
+python download_data.py -sp=1
+sudo chmod +x games/Playtesting_Final.x86_64
+```
+
 # Instruction
 * To train the agent to playtest the environment, use the command:
 ```
